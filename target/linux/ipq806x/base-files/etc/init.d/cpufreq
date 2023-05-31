@@ -23,15 +23,15 @@ ipq806x_power_auto() {
 	# CPU1 min frequency also has to be increased because there is a hardware constraint
 	# kraits cannot operate at 384MHz when L2 is at 1GHz.
 
-	# Change sampling rate for frequency scaling decisions to 1s, from 10 ms
-	echo "1000000" > /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
+	# Change sampling rate for frequency scaling decisions to 0,5s, from 10 ms
+	echo "500000" > /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
 
 	# Change sampling rate for frequency down scaling decision to 10s
 	echo 10 > /sys/devices/system/cpu/cpufreq/ondemand/sampling_down_factor
 
 	# Change the CPU load threshold above which frequency is up-scaled to
 	# turbo frequency,to 50%
-	echo 55 > /sys/devices/system/cpu/cpufreq/ondemand/up_threshold
+	echo 50 > /sys/devices/system/cpu/cpufreq/ondemand/up_threshold
 }
 
 ipq40xx_power_auto() {
