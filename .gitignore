@@ -17,6 +17,7 @@
 /overlay
 /package/feeds
 /package/openwrt-packages
+/package/qca-nss
 /*.patch
 /llvm-bpf*
 key-build*

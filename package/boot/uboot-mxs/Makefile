@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/kernel.mk
 
 PKG_VERSION:=2020.04
-PKG_RELEASE:=5
+PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_HASH:=fe732aaf037d9cc3c0909bad8362af366ae964bbdac6913a34081ff4ad565372
 
@@ -19,7 +19,6 @@ include $(INCLUDE_DIR)/host-build.mk
 
 define U-Boot/Default
   BUILD_TARGET:=mxs
-  BUILD_SUBTARGET:=generic
   UBOOT_IMAGE:=u-boot.sb
   DEFAULT:=y
   HIDDEN:=1

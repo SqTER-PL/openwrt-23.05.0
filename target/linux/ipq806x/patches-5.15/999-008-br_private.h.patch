@@ -1,0 +1,29 @@
+diff --git a/net/bridge/br_private.h b/net/bridge/br_private.h
+index 951ba1d..bd18606 100644
+--- a/net/bridge/br_private.h
++++ b/net/bridge/br_private.h
+@@ -853,6 +853,7 @@ void br_manage_promisc(struct net_bridge *br);
+ int nbp_backup_change(struct net_bridge_port *p, struct net_device *backup_dev);
+ 
+ /* br_input.c */
++int br_pass_frame_up(struct sk_buff *skb);
+ int br_handle_frame_finish(struct net *net, struct sock *sk, struct sk_buff *skb);
+ rx_handler_func_t *br_get_rx_handler(const struct net_device *dev);
+ 
+@@ -2120,4 +2120,16 @@ void br_do_proxy_suppress_arp(struct sk_buff *skb, struct net_bridge *br,
+ void br_do_suppress_nd(struct sk_buff *skb, struct net_bridge *br,
+ 		       u16 vid, struct net_bridge_port *p, struct nd_msg *msg);
+ struct nd_msg *br_is_nd_neigh_msg(struct sk_buff *skb, struct nd_msg *m);
++
++#define __br_get(__hook, __default, __args ...) \
++		(__hook ? (__hook(__args)) : (__default))
++
++static inline void __br_notify(int group, int type, const void *data)
++{
++	br_notify_hook_t *notify_hook = rcu_dereference(br_notify_hook);
++
++	if (notify_hook)
++		notify_hook(group, type, data);
++}
++
+ #endif

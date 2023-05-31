@@ -1,0 +1,66 @@
+diff --git a/net/8021q/vlan_core.c b/net/8021q/vlan_core.c
+index 59bc13b..d5a6110 100644
+--- a/net/8021q/vlan_core.c
++++ b/net/8021q/vlan_core.c
+@@ -72,6 +72,47 @@ bool vlan_do_receive(struct sk_buff **skbp)
+ 	return true;
+ }
+ 
++/* Update the VLAN device with statistics from network offload engines */
++void __vlan_dev_update_accel_stats(struct net_device *dev,
++				   struct rtnl_link_stats64 *nlstats)
++{
++	struct vlan_dev_priv *vlan = vlan_dev_priv(dev);
++	struct vlan_pcpu_stats *stats;
++
++	if (!is_vlan_dev(dev))
++		return;
++
++	stats = this_cpu_ptr(vlan->vlan_pcpu_stats);
++
++	u64_stats_update_begin(&stats->syncp);
++	stats->rx_packets += nlstats->rx_packets;
++	stats->rx_bytes += nlstats->rx_bytes;
++	stats->tx_packets += nlstats->tx_packets;
++	stats->tx_bytes += nlstats->tx_bytes;
++	u64_stats_update_end(&stats->syncp);
++}
++EXPORT_SYMBOL(__vlan_dev_update_accel_stats);
++
++/* Lookup the 802.1p egress_map table and return the 802.1p value */
++u16 vlan_dev_get_egress_prio(struct net_device *dev, u32 skb_prio)
++{
++	struct vlan_priority_tci_mapping *mp;
++
++	mp = vlan_dev_priv(dev)->egress_priority_map[(skb_prio & 0xf)];
++	while (mp) {
++		if (mp->priority == skb_prio) {
++			/* This should already be shifted
++			 * to mask correctly with the
++			 * VLAN's TCI
++			 */
++			return mp->vlan_qos;
++		}
++		mp = mp->next;
++	}
++	return 0;
++}
++EXPORT_SYMBOL(vlan_dev_get_egress_prio);
++
+ /* Must be invoked with rcu_read_lock. */
+ struct net_device *__vlan_find_dev_deep_rcu(struct net_device *dev,
+ 					__be16 vlan_proto, u16 vlan_id)
+@@ -110,6 +150,13 @@ struct net_device *vlan_dev_real_dev(const struct net_device *dev)
+ }
+ EXPORT_SYMBOL(vlan_dev_real_dev);
+ 
++/* Caller is responsible to hold the reference of the returned device */
++struct net_device *vlan_dev_next_dev(const struct net_device *dev)
++{
++	return vlan_dev_priv(dev)->real_dev;
++}
++EXPORT_SYMBOL(vlan_dev_next_dev);
++
+ u16 vlan_dev_vlan_id(const struct net_device *dev)
+ {
+ 	return vlan_dev_priv(dev)->vlan_id;

@@ -1,7 +1,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=uqmi
-PKG_RELEASE:=5
+PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL=$(PROJECT_GIT)/project/uqmi.git
@@ -14,7 +14,6 @@ PKG_LICENSE:=GPL-2.0
 PKG_LICENSE_FILES:=
 
 PKG_FLAGS:=nonshared
-PKG_BUILD_FLAGS:=gc-sections
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/cmake.mk
@@ -33,9 +32,9 @@ define Package/uqmi/description
 endef
 
 TARGET_CFLAGS += \
-	-I$(STAGING_DIR)/usr/include \
-	-Wno-error=dangling-pointer \
-	-Wno-error=maybe-uninitialized
+	-I$(STAGING_DIR)/usr/include -ffunction-sections -fdata-sections
+
+TARGET_LDFLAGS += -Wl,--gc-sections
 
 CMAKE_OPTIONS += \
 	-DDEBUG=1

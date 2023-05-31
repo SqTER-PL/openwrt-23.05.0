@@ -1,0 +1,67 @@
+diff --git a/include/net/ip6_route.h b/include/net/ip6_route.h
+index 5efd0b7..ab5a8b7 100644
+--- a/include/net/ip6_route.h
++++ b/include/net/ip6_route.h
+@@ -211,6 +211,9 @@ void rt6_multipath_rebalance(struct fib6_info *f6i);
+ void rt6_uncached_list_add(struct rt6_info *rt);
+ void rt6_uncached_list_del(struct rt6_info *rt);
+ 
++int rt6_register_notifier(struct notifier_block *nb);
++int rt6_unregister_notifier(struct notifier_block *nb);
++
+ static inline const struct rt6_info *skb_rt6_info(const struct sk_buff *skb)
+ {
+ 	const struct dst_entry *dst = skb_dst(skb);
+diff --git a/net/ipv6/route.c b/net/ipv6/route.c
+index 9974393..cd0f6b4 100644
+--- a/net/ipv6/route.c
++++ b/net/ipv6/route.c
+@@ -192,6 +192,9 @@ static void rt6_uncached_list_flush_dev(struct net *net, struct net_device *dev)
+ 	}
+ }
+ 
++/* Define route change notification chain. */
++ATOMIC_NOTIFIER_HEAD(ip6route_chain);
++
+ static inline const void *choose_neigh_daddr(const struct in6_addr *p,
+ 					     struct sk_buff *skb,
+ 					     const void *daddr)
+@@ -3889,6 +3892,9 @@ int ip6_route_add(struct fib6_config *cfg, gfp_t gfp_flags,
+ 		return PTR_ERR(rt);
+ 
+ 	err = __ip6_ins_rt(rt, &cfg->fc_nlinfo, extack);
++	if (!err)
++		atomic_notifier_call_chain(&ip6route_chain,
++					   RTM_NEWROUTE, rt);
+ 	fib6_info_release(rt);
+ 
+ 	return err;
+@@ -3910,6 +3916,9 @@ static int __ip6_del_rt(struct fib6_info *rt, struct nl_info *info)
+ 	err = fib6_del(rt, info);
+ 	spin_unlock_bh(&table->tb6_lock);
+ 
++	if (!err)
++		atomic_notifier_call_chain(&ip6route_chain,
++					   RTM_DELROUTE, rt);
+ out:
+ 	fib6_info_release(rt);
+ 	return err;
+@@ -6345,6 +6354,18 @@ static int ip6_route_dev_notify(struct notifier_block *this,
+ 	return NOTIFY_OK;
+ }
+ 
++int rt6_register_notifier(struct notifier_block *nb)
++{
++	return atomic_notifier_chain_register(&ip6route_chain, nb);
++}
++EXPORT_SYMBOL(rt6_register_notifier);
++
++int rt6_unregister_notifier(struct notifier_block *nb)
++{
++	return atomic_notifier_chain_unregister(&ip6route_chain, nb);
++}
++EXPORT_SYMBOL(rt6_unregister_notifier);
++
+ /*
+  *	/proc
+  */
