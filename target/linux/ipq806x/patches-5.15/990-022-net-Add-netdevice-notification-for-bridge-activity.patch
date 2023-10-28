@@ -1,0 +1,40 @@
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -2857,6 +2857,8 @@ enum netdev_cmd {
+ 	NETDEV_CVLAN_FILTER_DROP_INFO,
+ 	NETDEV_SVLAN_FILTER_PUSH_INFO,
+ 	NETDEV_SVLAN_FILTER_DROP_INFO,
++	NETDEV_BR_JOIN,
++	NETDEV_BR_LEAVE,
+ };
+ const char *netdev_cmd_to_name(enum netdev_cmd cmd);
+ 
+--- a/net/bridge/br_if.c
++++ b/net/bridge/br_if.c
+@@ -710,6 +710,7 @@ int br_add_if(struct net_bridge *br, str
+ 	br_set_gso_limits(br);
+ 
+ 	kobject_uevent(&p->kobj, KOBJ_ADD);
++	call_netdevice_notifiers(NETDEV_BR_JOIN, dev);
+ 
+ 	return 0;
+ 
+@@ -746,6 +747,8 @@ int br_del_if(struct net_bridge *br, str
+ 	if (!p || p->br != br)
+ 		return -EINVAL;
+ 
++	call_netdevice_notifiers(NETDEV_BR_LEAVE, dev);
++
+ 	/* Since more than one interface can be attached to a bridge,
+ 	 * there still maybe an alternate path for netconsole to use;
+ 	 * therefore there is no reason for a NETDEV_RELEASE event.
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -1686,6 +1686,7 @@ const char *netdev_cmd_to_name(enum netd
+ 	N(CVLAN_FILTER_PUSH_INFO) N(CVLAN_FILTER_DROP_INFO)
+ 	N(SVLAN_FILTER_PUSH_INFO) N(SVLAN_FILTER_DROP_INFO)
+ 	N(PRE_CHANGEADDR)
++	N(BR_JOIN) N(BR_LEAVE)
+ 	}
+ #undef N
+ 	return "UNKNOWN_NETDEV_EVENT";

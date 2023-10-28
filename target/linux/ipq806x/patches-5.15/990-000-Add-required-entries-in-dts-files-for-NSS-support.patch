@@ -214,7 +214,7 @@
  
 --- a/arch/arm/boot/dts/qcom-ipq8064-eax500.dtsi
 +++ b/arch/arm/boot/dts/qcom-ipq8064-eax500.dtsi
-@@ -186,10 +186,17 @@
+@@ -198,10 +198,17 @@
  			0x00094 0x4e        /* PORT6_STATUS */
  			>;
  	};
@@ -232,7 +232,7 @@
  
  	phy-mode = "rgmii";
  	qcom,id = <1>;
-@@ -205,6 +212,9 @@
+@@ -217,6 +224,9 @@
  
  &gmac2 {
  	status = "okay";
@@ -265,7 +265,7 @@
 -};
 --- a/arch/arm/boot/dts/qcom-ipq8064-ad7200-c2600.dtsi
 +++ b/arch/arm/boot/dts/qcom-ipq8064-ad7200-c2600.dtsi
-@@ -346,6 +346,9 @@
+@@ -357,6 +357,9 @@
  
  &gmac1 {
  	status = "okay";
@@ -275,7 +275,7 @@
  	phy-mode = "rgmii";
  	qcom,id = <1>;
  
-@@ -364,6 +367,9 @@
+@@ -375,6 +378,9 @@
  
  &gmac2 {
  	status = "okay";
