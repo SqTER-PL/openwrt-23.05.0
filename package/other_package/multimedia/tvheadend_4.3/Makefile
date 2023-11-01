@@ -16,8 +16,8 @@ PKG_LICENSE_FILES:=LICENSE.md
 
 PKG_BUILD_PARALLEL:=1
 PKG_FIXUP:=autoreconf
-
-PKG_USE_MIPS16:=0
+PKG_BUILD_FLAGS:=no-mips16
+PKG_BUILD_DEPENDS:=gettext-full/host
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/nls.mk
@@ -36,7 +36,6 @@ define Package/tvheadend_by_sqter
 	$(ICONV_DEPENDS) \
 	+zlib \
 	+TVHEADEND_MOD_AVAHI_SUPPORT:libavahi-client \
-	+TVHEADEND_MOD_REGEX_PCRE:libpcre \
 	+TVHEADEND_MOD_REGEX_PCRE2:libpcre2 \
 	+TVHEADEND_MOD_CSA:libdvbcsa_mod
 
@@ -68,8 +67,8 @@ endif
 
 ## Generic tvheadend options
 ifneq ($(CONFIG_TVHEADEND_MOD_OPTIMIZE_SPEED),)
-	TARGET_CFLAGS := $(filter-out -O%,$(TARGET_CFLAGS)) -O3 -flto
-	TARGET_CXXFLAGS := $(filter-out -O%,$(TARGET_CXXFLAGS)) -O3 -flto
+	TARGET_CFLAGS := $(filter-out -O%,$(TARGET_CFLAGS)) -O2 -flto
+	TARGET_CXXFLAGS := $(filter-out -O%,$(TARGET_CXXFLAGS)) -O2 -flto
 	TARGET_LDFLAGS += -flto
 endif
 
@@ -77,15 +76,12 @@ ifeq ($(CONFIG_TVHEADEND_MOD_TRACE),)
 	CONFIGURE_ARGS += --disable-trace
 endif
 
+CONFIGURE_ARGS += --disable-pcre
 ifneq ($(CONFIG_TVHEADEND_MOD_REGEX_PCRE2),)
-	CONFIGURE_ARGS += --disable-pcre --enable-pcre2
-else
-ifneq ($(CONFIG_TVHEADEND_MOD_REGEX_PCRE),)
-	CONFIGURE_ARGS += --enable-pcre --disable-pcre2
+	CONFIGURE_ARGS += --enable-pcre2
 else
 ifneq ($(CONFIG_TVHEADEND_MOD_REGEX_POSIX),)
-	CONFIGURE_ARGS += --disable-pcre --disable-pcre2
-endif
+	CONFIGURE_ARGS += --disable-pcre2
 endif
 endif
 
